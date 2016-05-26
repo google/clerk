@@ -114,14 +114,16 @@ struct Stats {
                             // and/or the Exporting Process.
   };
   Stats();
-  Stats(uint64_t b, uint64_t p, uint64_t ts_ms);
+  Stats(uint64_t b, uint64_t p, uint64_t ts_ns);
+
   uint64_t bytes;
   uint64_t packets;
   uint8_t tcp_flags;
-  uint64_t first_ms, last_ms;  // millis since epoch
+  uint64_t first_ns, last_ns;  // nanos since epoch
+
   const Stats& operator+=(const Stats& f);
-  uint8_t Finished(uint64_t cutoff_ms) const {
-    if (last_ms < cutoff_ms) {
+  uint8_t Finished(uint64_t cutoff_ns) const {
+    if (last_ns < cutoff_ns) {
       return IDLE_TIMEOUT;
     }
     if (tcp_flags & (0x01 /* FIN */ | 0x04 /* RST */)) {

@@ -107,8 +107,8 @@ bool IPFIXPacket::AddToBuffer(const flow::Key& k, const flow::Stats& f,
   WriteChars(&current_, k.protocol, f.tcp_flags, k.icmp_type, k.icmp_code);
   WriteBE64(&current_, f.bytes);
   WriteBE64(&current_, f.packets);
-  WriteBE64(&current_, f.first_ms);
-  WriteBE64(&current_, f.last_ms);
+  WriteBE64(&current_, f.first_ns);
+  WriteBE64(&current_, f.last_ns);
   WriteChars(&current_, k.tos, end_reason, k.vlan >> 8, k.vlan);
   CHECK_LE(current_, want);
   return current_ + kSingleRecordSize >= limit_;
@@ -135,8 +135,8 @@ void IPFIXPacket::WriteFlowSet(bool v4) {
   WriteBE16s(&current_, ICMP_TYPE, 2);
   WriteBE16s(&current_, IN_BYTES, 8);
   WriteBE16s(&current_, IN_PKTS, 8);
-  WriteBE16s(&current_, FLOW_START_MILLISECONDS, 8);
-  WriteBE16s(&current_, FLOW_END_MILLISECONDS, 8);
+  WriteBE16s(&current_, FLOW_START_NANOSECONDS, 8);
+  WriteBE16s(&current_, FLOW_END_NANOSECONDS, 8);
   WriteBE16s(&current_, IP_CLASS_OF_SERVICE, 1);
   WriteBE16s(&current_, FLOW_END_REASON, 1);
   WriteBE16s(&current_, VLAN_ID, 2);

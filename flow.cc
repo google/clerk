@@ -32,15 +32,15 @@ size_t Key::hash() const {
 
 Stats::Stats() { memset(this, 0, sizeof(*this)); }
 
-Stats::Stats(uint64_t b, uint64_t p, uint64_t ts_ms)
-    : bytes(b), packets(p), tcp_flags(0), first_ms(ts_ms), last_ms(ts_ms) {}
+Stats::Stats(uint64_t b, uint64_t p, uint64_t ts_ns)
+    : bytes(b), packets(p), tcp_flags(0), first_ns(ts_ns), last_ns(ts_ns) {}
 
 const Stats& Stats::operator+=(const Stats& f) {
   bytes += f.bytes;
   packets += f.packets;
   tcp_flags |= f.tcp_flags;
-  if (!first_ms || first_ms > f.first_ms) first_ms = f.first_ms;
-  if (!last_ms || last_ms < f.last_ms) last_ms = f.last_ms;
+  if (!first_ns || first_ns > f.first_ns) first_ns = f.first_ns;
+  if (!last_ns || last_ns < f.last_ns) last_ns = f.last_ns;
   return *this;
 }
 

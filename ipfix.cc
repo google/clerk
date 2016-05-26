@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <arpa/inet.h>   // inet_ntop
+#include <netinet/in.h>  // INET6_ADDRSTRLEN
+
 #include "ipfix.h"
 #include "flow.h"
 #include "send.h"
@@ -26,7 +29,7 @@ IPFIX::IPFIX(const IPFIX* other, const IPFIXFactory* f) : factory_(f) {
   if (other) {
     flows_ = other->flows_;
     for (auto iter = flows_.begin(); iter != flows_.end(); ) {
-      if (iter->second.Finished(factory_->CutoffMillis()) ==
+      if (iter->second.Finished(factory_->CutoffNanos()) ==
           flow::Stats::ACTIVE_TIMEOUT) {
         iter->second.packets = 0;
         iter->second.bytes = 0;
@@ -42,7 +45,7 @@ IPFIX::IPFIX(const IPFIX* other, const IPFIXFactory* f) : factory_(f) {
 
 void IPFIX::Process(const Packet& p) {
   flow::Key key;
-  flow::Stats stats(p.hdr()->tp_len, 1, p.ts_nanos() / kNumNanosPerMilli);
+  flow::Stats stats(p.hdr()->tp_len, 1, p.ts_nanos());
 
   // Layer 2-ish
   if (p.hdr()->tp_status & TP_STATUS_VLAN_VALID) {
@@ -99,7 +102,7 @@ void PacketSender::Send(const flow::Table& flows) {
   pkt.Reset(ipfix::PT_V4, seq_);
   int ip4count = 0;
   for (auto iter : flows) {
-    auto end_reason = iter.second.Finished(factory_->CutoffMillis());
+    auto end_reason = iter.second.Finished(factory_->CutoffNanos());
     if (iter.first.network == 4 &&
         (iter.second.packets > 0 ||
          end_reason != flow::Stats::ACTIVE_TIMEOUT)) {
@@ -125,7 +128,7 @@ void PacketSender::Send(const flow::Table& flows) {
   pkt.Reset(ipfix::PT_V6, seq_);
   int ip6count = 0;
   for (auto iter : flows) {
-    auto end_reason = iter.second.Finished(factory_->CutoffMillis());
+    auto end_reason = iter.second.Finished(factory_->CutoffNanos());
     if (iter.first.network == 6 &&
         (iter.second.packets > 0 ||
          end_reason != flow::Stats::ACTIVE_TIMEOUT)) {
@@ -144,36 +147,31 @@ void PacketSender::Send(const flow::Table& flows) {
 }
 
 static void WriteIPToBuffer(char* buf, int n, const uint8_t* ip, bool v4) {
-  if (v4) {
-    snprintf(buf, n, "%d.%d.%d.%d", ip[12], ip[13], ip[14], ip[15]);
-  } else {
-    snprintf(buf, n,
-             "%02x%02x:%02x%02x:%02x%02x:%02x%02x:"
-             "%02x%02x:%02x%02x:%02x%02x:%02x%02x",
-             ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8],
-             ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]);
-  }
+  inet_ntop(v4 ? AF_INET : AF_INET6, ip + (v4 ? 12 : 0), buf, n);
 }
 
 void FileSender::Send(const flow::Table& flows) {
-  // 40 bytes is max size for IPv6:  2 chars per 16 bytes = 32, + 7 colons +
-  // null byte = 40.  IPv4 is much smaller.
-  char src_ip_buf[40];
-  char dst_ip_buf[40];
+  char src_ip_buf[INET6_ADDRSTRLEN];
+  char dst_ip_buf[INET6_ADDRSTRLEN];
   fprintf(f_,
           "FlowStart,FlowEnd,SrcIP,DstIP,SrcPort,DstPort,VLAN,TOS,Protocol,"
           "ICMPType,ICMPCode,Bytes,Packets\n");
   for (const auto& iter : flows) {
+    auto end_reason = iter.second.Finished(factory_->CutoffNanos());
     auto key = iter.first;
     auto stats = iter.second;
-    WriteIPToBuffer(src_ip_buf, sizeof(src_ip_buf), key.src_ip,
-                    key.network == 4);
-    WriteIPToBuffer(dst_ip_buf, sizeof(src_ip_buf), key.dst_ip,
-                    key.network == 4);
-    fprintf(f_, "%lu,%lu,%s,%s,%d,%d,%d,%d,%d,%d,%d,%lu,%lu\n", stats.first_ms,
-            stats.last_ms, src_ip_buf, dst_ip_buf, key.src_port, key.dst_port,
-            key.vlan, key.tos, key.protocol, key.icmp_type, key.icmp_code,
-            stats.bytes, stats.packets);
+    if (stats.packets > 0 || end_reason != flow::Stats::ACTIVE_TIMEOUT) {
+      WriteIPToBuffer(src_ip_buf, sizeof(src_ip_buf), key.src_ip,
+                      key.network == 4);
+      WriteIPToBuffer(dst_ip_buf, sizeof(src_ip_buf), key.dst_ip,
+                      key.network == 4);
+      fprintf(f_, "%.9Lf,%.9Lf,%s,%s,%d,%d,%d,%d,%d,%d,%d,%lu,%lu,%d\n",
+              stats.first_ns * 1.0L / kNumNanosPerSecond,
+              stats.last_ns * 1.0L / kNumNanosPerSecond, src_ip_buf, dst_ip_buf,
+              key.src_port, key.dst_port, key.vlan, key.tos, key.protocol,
+              key.icmp_type, key.icmp_code, stats.bytes, stats.packets,
+              end_reason);
+    }
   }
   fflush(f_);
 }

@@ -117,8 +117,8 @@ int main(int argc, char** argv) {
     SleepForSeconds(last_upload_secs + FLAGS_upload_every_secs -
                     GetCurrentTimeSeconds());
     last_upload_secs = GetCurrentTimeSeconds();
-    factory.SetCutoffMillis((last_upload_secs - FLAGS_flow_timeout_secs) *
-                            kNumMillisPerSecond);
+    factory.SetCutoffNanos((last_upload_secs - FLAGS_flow_timeout_secs) *
+                           kNumNanosPerSecond);
     vector<std::unique_ptr<clerk::State>> states;
     processor.Gather(&states, false);
     CombineGather(&states);

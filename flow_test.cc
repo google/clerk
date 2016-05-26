@@ -75,18 +75,18 @@ TEST_F(StatsTest, TestIncrement) {
   Stats a(10, 1, 1000);
   EXPECT_EQ(a.bytes, 10);
   EXPECT_EQ(a.packets, 1);
-  EXPECT_EQ(a.first_ms, 1000);
-  EXPECT_EQ(a.last_ms, 1000);
+  EXPECT_EQ(a.first_ns, 1000);
+  EXPECT_EQ(a.last_ns, 1000);
   a += Stats(5, 2, 1500);
   EXPECT_EQ(a.bytes, 15);
   EXPECT_EQ(a.packets, 3);
-  EXPECT_EQ(a.first_ms, 1000);
-  EXPECT_EQ(a.last_ms, 1500);
+  EXPECT_EQ(a.first_ns, 1000);
+  EXPECT_EQ(a.last_ns, 1500);
   a += Stats(3, 4, 500);  // backwards in time, shouldn't probably happen
   EXPECT_EQ(a.bytes, 18);
   EXPECT_EQ(a.packets, 7);
-  EXPECT_EQ(a.first_ms, 500);
-  EXPECT_EQ(a.last_ms, 1500);
+  EXPECT_EQ(a.first_ns, 500);
+  EXPECT_EQ(a.last_ns, 1500);
 }
 
 TEST_F(TableTest, TestAdd) {

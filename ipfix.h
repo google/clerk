@@ -81,18 +81,18 @@ class IPFIX : public State {
 
 class IPFIXFactory : public StateFactory {
  public:
-  IPFIXFactory() : flow_timeout_cutoff_millis_(0) {}
+  IPFIXFactory() : flow_timeout_cutoff_ns_(0) {}
   ~IPFIXFactory() override {}
 
   std::unique_ptr<State> New(const State* old) const override {
     return std::unique_ptr<State>(
         new IPFIX(reinterpret_cast<const IPFIX*>(old), this));
   }
-  void SetCutoffMillis(uint64_t ms) { flow_timeout_cutoff_millis_ = ms; }
-  uint64_t CutoffMillis() const { return flow_timeout_cutoff_millis_; }
+  void SetCutoffNanos(uint64_t ms) { flow_timeout_cutoff_ns_ = ms; }
+  uint64_t CutoffNanos() const { return flow_timeout_cutoff_ns_; }
 
  private:
-  uint64_t flow_timeout_cutoff_millis_;
+  uint64_t flow_timeout_cutoff_ns_;
 };
 
 }  // namespace clerk
