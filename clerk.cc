@@ -13,11 +13,13 @@
 // limitations under the License.
 
 #include <arpa/inet.h>
+#include <stdio.h>
 
 #include <memory>
 #include <thread>
 
 #include <gflags/gflags.h>
+#include "asn_map.h"
 #include "ipfix.h"
 #include "testimony.h"
 
@@ -29,6 +31,11 @@ DEFINE_string(testimony, "", "Name of testimony socket");
 DEFINE_string(collector, "127.0.0.1:6555", "Socket address of collector");
 DEFINE_double(upload_every_secs, 60, "Upload IPFIX to collector once every X");
 DEFINE_double(flow_timeout_secs, 60 * 5, "Time out flows after X");
+DEFINE_string(asns_csv, "",
+              "Filename of ASN CSV file.  See *_asns.py for ways to get ASN "
+              "data readable by clerk.");
+DEFINE_double(asns_reread_every_secs, 86400,
+              "Reread ASN CSV file once every X seconds");
 
 // CombineGather parallelizes the process of combining multiple IPFIX states
 // together, by synchronously combining half of them with the other half, until
@@ -55,6 +62,14 @@ void CombineGather(vector<std::unique_ptr<clerk::State>>* states) {
     // Now throw away the second half, since it was combined with the first
     // and is now redundant.
     states->resize(new_size);
+  }
+}
+
+void AddASNsTo(clerk::flow::Table* t, const clerk::ASNMap& asns) {
+  LOG(INFO) << "Adding ASNs to flows";
+  for (auto iter = t->begin(); iter != t->end(); ++iter) {
+    iter->second.src_asn = asns.ASN(iter->first.src_ip);
+    iter->second.dst_asn = asns.ASN(iter->first.dst_ip);
   }
 }
 
@@ -92,8 +107,23 @@ void StringToSocketStorage(const std::string& addr, struct sockaddr_storage* ss,
   }
 }
 
+void ReadASNs(clerk::ASNMap* map) {
+  if (!FLAGS_asns_csv.empty()) {
+    LOG(INFO) << "Reading ASNs from " << FLAGS_asns_csv;
+    auto f = fopen(FLAGS_asns_csv.c_str(), "r");
+    PCHECK(f != nullptr) << "Failed to open " << FLAGS_asns_csv;
+    map->Clear();
+    clerk::LoadFromCSV(map, f);
+    fclose(f);
+  }
+}
+
 int main(int argc, char** argv) {
   ParseCommandLineFlags(&argc, &argv, true);
+
+  clerk::ASNMap asns;
+  ReadASNs(&asns);
+  double last_asn_read_secs = GetCurrentTimeSeconds();
 
   clerk::IPFIXFactory factory;
 
@@ -123,6 +153,13 @@ int main(int argc, char** argv) {
     processor.Gather(&states, false);
     CombineGather(&states);
     clerk::IPFIX* first = reinterpret_cast<clerk::IPFIX*>(states[0].get());
-    sender->Send(first->Flows());
+    clerk::flow::Table f;
+    first->SwapFlows(&f);
+    AddASNsTo(&f, asns);
+    sender->Send(f);
+    if (last_upload_secs - last_asn_read_secs > FLAGS_asns_reread_every_secs) {
+      last_asn_read_secs = last_upload_secs;
+      ReadASNs(&asns);
+    }
   }
 }

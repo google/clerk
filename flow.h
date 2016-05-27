@@ -121,6 +121,12 @@ struct Stats {
   uint8_t tcp_flags;
   uint64_t first_ns, last_ns;  // nanos since epoch
 
+
+  // Actually part of the key, but filled in later on, when the key is already
+  // constant and unmodifiable.
+  uint32_t src_asn;
+  uint32_t dst_asn;
+
   const Stats& operator+=(const Stats& f);
   uint8_t Finished(uint64_t cutoff_ns) const {
     if (last_ns < cutoff_ns) {

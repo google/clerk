@@ -20,8 +20,6 @@ namespace clerk {
 namespace flow {
 
 class KeyTest : public ::testing::Test {};
-class StatsTest : public ::testing::Test {};
-class TableTest : public ::testing::Test {};
 
 const char data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -71,6 +69,8 @@ TEST_F(KeyTest, TestCombine) {
   EXPECT_EQ(a, b);
 }
 
+class StatsTest : public ::testing::Test {};
+
 TEST_F(StatsTest, TestIncrement) {
   Stats a(10, 1, 1000);
   EXPECT_EQ(a.bytes, 10);
@@ -88,6 +88,8 @@ TEST_F(StatsTest, TestIncrement) {
   EXPECT_EQ(a.first_ns, 500);
   EXPECT_EQ(a.last_ns, 1500);
 }
+
+class TableTest : public ::testing::Test {};
 
 TEST_F(TableTest, TestAdd) {
   Table t;

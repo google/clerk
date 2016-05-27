@@ -70,7 +70,7 @@ class IPFIX : public State {
   // += aggregates multiple IPFIX states together.
   void operator+=(const IPFIX& other);
 
-  const flow::Table Flows() const { return flows_; }
+  void SwapFlows(flow::Table* f) { f->swap(flows_); }
 
  private:
   flow::Table flows_;

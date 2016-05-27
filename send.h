@@ -32,6 +32,8 @@ const size_t kSingleRecordSize =
     1 +        // Protocol
     1 +        // TCP flags
     2 +        // ICMP code
+    4 +        // Src AS
+    4 +        // Dst AS
     8 +        // Bytes
     8 +        // Packets
     8 +        // First millis since epoch, uint64
@@ -40,10 +42,10 @@ const size_t kSingleRecordSize =
     1 +        // Flow end reason
     2 +        // VLAN ID
     0;
-const uint16_t kFieldCount = 14;
+const uint16_t kFieldCount = 16;
 const size_t kHeaderSize = 20;
 const size_t kFlowSetSize = 2 * 2 +           // Template ID, field count
-                            kFieldCount * 4;  // 14 fields
+                            kFieldCount * 4;  // fields' type/length
 
 // Pulled from http://www.ietf.org/rfc/rfc3954.txt
 enum IpfixTypes {
@@ -56,6 +58,8 @@ enum IpfixTypes {
   IPV4_SRC_ADDR = 8,
   L4_DST_PORT = 11,
   IPV4_DST_ADDR = 12,
+  BGP_SOURCE_AS_NUMBER = 16,
+  BGP_DESTINATION_AS_NUMBER = 17,
   IPV6_SRC_ADDR = 27,
   IPV6_DST_ADDR = 28,
   ICMP_TYPE = 32,

@@ -105,6 +105,8 @@ bool IPFIXPacket::AddToBuffer(const flow::Key& k, const flow::Stats& f,
   }
   WriteBE16s(&current_, k.src_port, k.dst_port);
   WriteChars(&current_, k.protocol, f.tcp_flags, k.icmp_type, k.icmp_code);
+  WriteBE32(&current_, f.src_asn);
+  WriteBE32(&current_, f.dst_asn);
   WriteBE64(&current_, f.bytes);
   WriteBE64(&current_, f.packets);
   WriteBE64(&current_, f.first_ns);
@@ -133,6 +135,8 @@ void IPFIXPacket::WriteFlowSet(bool v4) {
   WriteBE16s(&current_, PROTOCOL, 1);
   WriteBE16s(&current_, TCP_FLAGS, 1);
   WriteBE16s(&current_, ICMP_TYPE, 2);
+  WriteBE16s(&current_, BGP_SOURCE_AS_NUMBER, 4);
+  WriteBE16s(&current_, BGP_DESTINATION_AS_NUMBER, 4);
   WriteBE16s(&current_, IN_BYTES, 8);
   WriteBE16s(&current_, IN_PKTS, 8);
   WriteBE16s(&current_, FLOW_START_NANOSECONDS, 8);
