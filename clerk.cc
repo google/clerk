@@ -40,9 +40,9 @@ DEFINE_double(asns_reread_every_secs, 86400,
 // CombineGather parallelizes the process of combining multiple IPFIX states
 // together, by synchronously combining half of them with the other half, until
 // there's only one left.
-void CombineGather(vector<std::unique_ptr<clerk::State>>* states) {
+void CombineGather(std::vector<std::unique_ptr<clerk::State>>* states) {
   while (states->size() > 1) {
-    vector<std::thread> threads;
+    std::vector<std::thread> threads;
     // New size is 1/2 the old size, rounded up.
     int new_size = states->size() / 2 + states->size() % 2;
     LOG(INFO) << "Combining " << states->size() << " states into " << new_size;
@@ -120,7 +120,6 @@ void ReadASNs(clerk::ASNMap* map) {
 
 int main(int argc, char** argv) {
   ParseCommandLineFlags(&argc, &argv, true);
-
   clerk::ASNMap asns;
   ReadASNs(&asns);
   double last_asn_read_secs = GetCurrentTimeSeconds();
@@ -149,7 +148,7 @@ int main(int argc, char** argv) {
     last_upload_secs = GetCurrentTimeSeconds();
     factory.SetCutoffNanos((last_upload_secs - FLAGS_flow_timeout_secs) *
                            kNumNanosPerSecond);
-    vector<std::unique_ptr<clerk::State>> states;
+    std::vector<std::unique_ptr<clerk::State>> states;
     processor.Gather(&states, false);
     CombineGather(&states);
     clerk::IPFIX* first = reinterpret_cast<clerk::IPFIX*>(states[0].get());

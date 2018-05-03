@@ -17,8 +17,8 @@ DEPS=Makefile *.h
 CC=g++
 CFLAGS=-std=c++0x -g -Wall -fno-strict-aliasing -fPIC -fPIE -pie -fstack-protector -D_FORTIFY_SOURCE=2 -rdynamic -O2 -Wno-narrowing
 LDFLAGS=-Wl,-z,now -Wl,-z,relro
-SHARED_LIBS=-ltestimony -lglog -lgflags -lcityhash
-TEST_LIBS=-lgtest -lpthread
+SHARED_LIBS=-ltestimony -lglog -lgflags -lcityhash -lpthread
+TEST_LIBS=-lgtest
 STATIC_LIBS=/usr/lib/x86_64-linux-gnu/libglog.a /usr/lib/libtestimony.a /usr/local/lib/libcityhash.a /usr/lib/x86_64-linux-gnu/libgflags.a
 
 OBJECTS=flow.o headers.o ipfix.o send.o testimony.o util.o asn_map.o

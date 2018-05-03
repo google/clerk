@@ -7,14 +7,14 @@ testimony-based packet sharing.
 
 `clerk` uses https://github.com/google/testimony to get packets across N threads.
 
-   * Packet hits NIC
-   * Kernel places packet in `AF_PACKET` mmap region
-   * `testimonyd` hands mmap region to `clerk` packet thread
-   * `clerk` thread looks up and updates flow info
+   1 Packet hits NIC
+   1 Kernel places packet in `AF_PACKET` mmap region
+   1 `testimonyd` hands mmap region to `clerk` packet thread
+   1 `clerk` thread looks up and updates flow info
       * creates a key based on identifiers (src/dst IP/port, protocol, qos, etc)
       * looks up current stats, creating empty statistics if necessary
       * updates stats with new bytes/packets/tcp flags/etc.
-   * every minute, `clerk` main thread sends IPFIX
+   1 every minute, `clerk` main thread sends IPFIX
       * gathers flows from each of N packet threads
       * combines flows
       * generates IPFIX packets based on combined flow from all threads

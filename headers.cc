@@ -17,6 +17,8 @@
 #include <netinet/in.h>  // ntohs(), ntohl()
 #include <string.h>
 
+#include "stringpiece.h"
+
 namespace clerk {
 
 namespace {

@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 #include "headers.h"
+#include "stringpiece.h"
 #include "util.h"
 
 namespace clerk {

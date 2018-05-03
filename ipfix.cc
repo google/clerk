@@ -39,7 +39,17 @@ IPFIX::IPFIX(const IPFIX* other, const IPFIXFactory* f) : factory_(f) {
         iter = flows_.erase(iter);
       }
     }
-    LOG(INFO) << "Retained " << flows_.size() << " from previous";
+    // Should the number of flows we maintain shrink a lot, we'd like our memory
+    // usage to decrease.  However, we don't want to have to
+    // shrink/grow/shrink/grow our maps constantly.  So, we call 'reserve' on
+    // our new map to shrink it to the size of our old map.  If the flows we
+    // need in memory decrease, this will decrease the map's bucket size (which
+    // otherwise was copied over via the copy constructor and will _not_
+    // decrease ever).  However, since it does it based on the old size, we have
+    // a bit of a buffer for size decreases.
+    flows_.reserve(other->flows_.size());
+    LOG(INFO) << "Retained " << flows_.size() << " from previous in "
+              << flows_.bucket_count() << " buckets";
   }
 }
 

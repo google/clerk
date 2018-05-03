@@ -20,6 +20,7 @@
 
 #include "flow.h"
 #include "util.h"
+#include "stringpiece.h"
 
 namespace clerk {
 namespace ipfix {
@@ -65,8 +66,8 @@ enum IpfixTypes {
   ICMP_TYPE = 32,
   VLAN_ID = 58,
   FLOW_END_REASON = 136,
-  FLOW_START_NANOSECONDS = 156,
-  FLOW_END_NANOSECONDS = 157,
+  FLOW_START_MILLISECONDS = 152,
+  FLOW_END_MILLISECONDS = 153,
 };
 
 enum PacketType {

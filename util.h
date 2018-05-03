@@ -15,28 +15,10 @@
 #ifndef CLERK_UTIL_H_
 #define CLERK_UTIL_H_
 
-#include <string.h>
-
 #include <condition_variable>
 #include <mutex>
 
 using namespace std;
-
-class StringPiece {
- public:
-  StringPiece() : data_(nullptr), size_(0) {}
-  StringPiece(const char* data, size_t size) : data_(data), size_(size) {}
-  const char* data() const { return data_; }
-  size_t size() const { return size_; }
-  char operator[](size_t i) const { return data_[i]; }
-  bool operator==(const StringPiece& s) const {
-    return s.size_ == size_ && memcmp(s.data_, data_, size_) == 0;
-  }
-
- private:
-  const char* data_;
-  size_t size_;
-};
 
 class Notification {
  public:

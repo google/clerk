@@ -26,6 +26,7 @@
 #include <netinet/udp.h>      // udphdr
 
 #include "util.h"
+#include "stringpiece.h"
 
 namespace clerk {
 

@@ -28,6 +28,7 @@
 
 #include "headers.h"
 #include "util.h"
+#include "stringpiece.h"
 
 // TODO(user):  Use namespace access::security::clerk.
 namespace clerk {
@@ -83,12 +84,12 @@ class TestimonyProcessor {
   // destructed, to stop all threads and gather their final state.
   // Also, StartThreads must be called first, one time, before the first Gather
   // call.
-  void Gather(vector<std::unique_ptr<State>>* states, bool last);
+  void Gather(std::vector<std::unique_ptr<State>>* states, bool last);
 
  private:
   const string socket_;
   const StateFactory* states_;
-  vector<std::unique_ptr<TestimonyThread>> threads_;
+  std::vector<std::unique_ptr<TestimonyThread>> threads_;
   Notification last_;
   DISALLOW_COPY_AND_ASSIGN(TestimonyProcessor);
 };

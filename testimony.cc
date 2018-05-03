@@ -15,6 +15,7 @@
 #include <testimony.h>
 #include <glog/logging.h>
 
+#include "stringpiece.h"
 #include "testimony.h"
 
 namespace clerk {
@@ -51,7 +52,7 @@ void TestimonyProcessor::StartThreads() {
   testimony_close(t);
 }
 
-void TestimonyProcessor::Gather(vector<std::unique_ptr<State>>* states,
+void TestimonyProcessor::Gather(std::vector<std::unique_ptr<State>>* states,
                                 bool last) {
   CHECK_NE(0, threads_.size());
   CHECK(!last_.HasBeenNotified());
